@@ -77,7 +77,9 @@ def run():
 
     X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
-    model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
+    # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
+    model = Xception_Model(input_shape=(299,299,3),  batch_size = 64,
+                     num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
     # model.load_model("weights.05-0.50.hdf5")
