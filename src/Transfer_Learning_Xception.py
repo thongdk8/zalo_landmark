@@ -12,7 +12,7 @@ import sys
 # metrics.categorical_accuracy()
 
 class Xception_Model():
-    def __init__(self, input_shape=(299,299,3),  batch_size, num_classes, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
+    def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
         self.batch_size = batch_size
         self.model = keras.applications.Xception(include_top=False,weights=None,input_shape=input_shape)
         if trainable:
