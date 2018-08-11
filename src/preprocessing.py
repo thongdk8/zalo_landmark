@@ -19,6 +19,7 @@ def preprocess_image(path, W, H):
     readImage = cv2.resize(readImage,(W,H))
     image_arr = np.asarray(readImage)
     image_arr = np.array(image_arr)
+    image_arr.astype(np.float32)
     image_arr = preprocess_input(image_arr)
     element_folder = str(path).split('/')
     # element_folder = str(path).split('\\')
