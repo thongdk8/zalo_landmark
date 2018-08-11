@@ -53,7 +53,7 @@ def load_image(dir_folder,num_classes = 5, train_logical=True, W=32, H=32):
     number_of_image = len(files)
     for i in range(0,number_of_image):
         t_image, t_label = preprocess_image(files[i], W, H)
-        if t_image != None:
+        if t_image.any() != None:
             images.append(t_image)
             labels.append(t_label)
     images = np.array([x for x in images])
