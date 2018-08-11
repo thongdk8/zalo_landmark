@@ -1,20 +1,22 @@
 import keras
+from keras import backend as K
 from keras.models import Model
 from keras.layers import Dense, Conv2D, GlobalAveragePooling2D
 from preprocessing import *
 from keras.optimizers import Adam
 
-
+from keras.preprocessing.image import ImageDataGenerator
+import sys
 
 # from keras import metrics
 # metrics.categorical_accuracy()
 
 class Xception_Model():
-    def __init__(self, batch_size, num_classes, trainable=True):
+    def __init__(self, input_shape=(299,299,3),  batch_size, num_classes, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
         self.batch_size = batch_size
-        self.model = keras.applications.Xception(include_top=False,weights=None,input_shape=(96,96,3))
+        self.model = keras.applications.Xception(include_top=False,weights=None,input_shape=input_shape)
         if trainable:
-            self.model.load_weights('./pretrained_model/xception_weights_tf_dim_ordering_tf_kernels_notop.h5')
+            self.model.load_weights(pretrained_model)
 
         for layer in self.model.layers[:-20]:
             layer.trainable = False
@@ -28,7 +30,7 @@ class Xception_Model():
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
         self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
 
-        self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=3, verbose=1)
+        self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
         self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
                                                           monitor='val_loss', verbose=0, save_best_only=True,
@@ -44,12 +46,13 @@ class Xception_Model():
 
     def fit(self, x, y, x_val=None, y_val=None):
         if x_val == None:
-            self.history = self.model.fit(x, y, batch_size=self.batch_size, epochs=200, verbose=1,
+            self.history = self.model.fit(x, y, batch_size=self.batch_size, epochs=100, verbose=1,
                                           callbacks=self.callBackList, validation_split=0.1)
         else:
-            self.history = self.model.fit(x, y, batch_size=self.batch_size, epochs=200, verbose=1,
+            self.history = self.model.fit(x, y, batch_size=self.batch_size, epochs=100, verbose=1,
                                           callbacks=self.callBackList, validation_data=(x_val, y_val))
-        self.train_loss, self.train_metrics = self.model.evaluate(x=x, y=y, batch_size=512, verbose=1)
+            
+        # self.train_loss, self.train_metrics = self.model.evaluate(x=x, y=y, batch_size=512, verbose=1)
         return self.history
 
     def sumary(self):
@@ -66,22 +69,24 @@ def accuracy(test_x, test_y, model):
     accuracy = float(num_correct)/results.shape[0]
     return (accuracy * 100)
 
+
+
 def run():
 
-    dir_test = r'E:\datasets\animal_BTL_ML\test'
+    dir_test = sys.argv[1]
 
-    X, Y = load_image(dir_test, W=96, H=96)
+    X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
-    model = Xception_Model(16, 5, trainable=False)
+    model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
-    model.load_model("weights.05-0.50.hdf5")
-    # model.fit(X,Y)
+    # model.load_model("weights.05-0.50.hdf5")
+    model.fit(X,Y)
 
 
-    print("accuracy on testset: ", accuracy(X,Y,model))
-    print(1)
-    print(2)
+    # print("accuracy on testset: ", accuracy(X,Y,model))
+    # print(1)
+    # print(2)
 
 if __name__ == '__main__':
     run()
