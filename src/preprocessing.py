@@ -14,17 +14,21 @@ def preprocess_input(x):
     return x
 
 def preprocess_image(path, W, H):
-    readImage = cv2.imread(path)
-    #readImage = cv2.cvtColor(readImage, cv2.COLOR_BGR2GRAY)
-    readImage = cv2.resize(readImage,(W,H))
-    image_arr = np.asarray(readImage)
-    image_arr = np.array(image_arr, dtype=np.float32)
-    image_arr = preprocess_input(image_arr)
-    element_folder = str(path).split('/')
-    # element_folder = str(path).split('\\')
-    label = int(element_folder[-2])
+    try:
+        print ("Read image: " , path)
+        readImage = cv2.imread(path)
+        #readImage = cv2.cvtColor(readImage, cv2.COLOR_BGR2GRAY)
+        readImage = cv2.resize(readImage,(W,H))
+        image_arr = np.asarray(readImage)
+        image_arr = np.array(image_arr, dtype=np.float32)
+        image_arr = preprocess_input(image_arr)
+        element_folder = str(path).split('/')
+        # element_folder = str(path).split('\\')
+        label = int(element_folder[-2])
 
-    return image_arr, label
+        return image_arr, label
+    except:
+        return None, None
 
 
 
@@ -49,8 +53,9 @@ def load_image(dir_folder,num_classes = 5, train_logical=True, W=32, H=32):
     number_of_image = len(files)
     for i in range(0,number_of_image):
         t_image, t_label = preprocess_image(files[i], W, H)
-        images.append(t_image)
-        labels.append(t_label)
+        if t_image != None:
+            images.append(t_image)
+            labels.append(t_label)
     images = np.array([x for x in images])
     labels = np.array([to_arr_target(x) for x in labels])
     print('Shape images is ',np.shape(images))
