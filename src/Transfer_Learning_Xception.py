@@ -118,13 +118,13 @@ def run():
     # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
-    model = Xception_Model(input_shape=(299,299,3),  batch_size = 64,
+    model = Xception_Model(input_shape=(71,71,3),  batch_size = 128,
                      num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
     model.set_ImageDataGenerator(dataGenerator)
-    model.fit_generator(dataset_dir, batch_size=128)
+    model.fit_generator(dataset_dir, batch_size=256)
 
     # model.load_model("weights.05-0.50.hdf5")
     # model.fit(X,Y)
