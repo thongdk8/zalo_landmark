@@ -43,7 +43,7 @@ class Xception_Model():
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
         
-        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999,, decay=1e-6, amsgrad=True)
+        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=True)
         # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
