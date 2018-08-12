@@ -124,7 +124,7 @@ def run():
 
     dataGenerator = MyImageDataGenerator()
     model.set_ImageDataGenerator(dataGenerator)
-    model.fit_generator(dataset_dir, batch_size=256)
+    model.fit_generator(dataset_dir, target_size = (71, 71), batch_size=256)
 
     # model.load_model("weights.05-0.50.hdf5")
     # model.fit(X,Y)
