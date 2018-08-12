@@ -48,9 +48,6 @@ class Xception_Model():
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
-        
-        self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
-
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
         self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
