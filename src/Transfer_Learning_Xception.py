@@ -3,7 +3,7 @@ from keras import backend as K
 from keras.models import Model
 from keras.layers import Dense, Conv2D, GlobalAveragePooling2D
 from preprocessing import *
-from keras.optimizers import Adam
+from keras.optimizers import Adam,SGD
 
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import Sequence, to_categorical
@@ -31,6 +31,10 @@ class Xception_Model():
         for layer in self.model.layers[:-20]:
             layer.trainable = False
 
+        if ~trainable:
+            for layer in self.model.layers:
+                layer.trainable = False
+
         x = self.model.output
         x = GlobalAveragePooling2D()(x)
         # add a fully-connected layer
@@ -38,7 +42,14 @@ class Xception_Model():
         self.predictions = Dense(num_classes, activation='softmax', name='out_put')(x)
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
-        self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
+        
+        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999,, decay=1e-6, amsgrad=True)
+        # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+        # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+
+        
+        self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
