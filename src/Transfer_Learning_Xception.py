@@ -6,13 +6,23 @@ from preprocessing import *
 from keras.optimizers import Adam
 
 from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import Sequence, to_categorical
 import sys
 
+import numpy as np
+from skimage.io import imread
+from skimage.transform import resize
+import os
 # from keras import metrics
 # metrics.categorical_accuracy()
 
 class Xception_Model():
     def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
+        try:
+            os.mkdir("logs")
+            os.mkdir("out_model")
+        except:
+            print("Created output directory !")
         self.batch_size = batch_size
         self.model = keras.applications.Xception(include_top=False,weights=None,input_shape=input_shape)
         if trainable:
@@ -39,7 +49,10 @@ class Xception_Model():
 
         [self.train_loss, self.train_metrics] = 2*[None]
         self.history = None
+        self.dataGenerator = None
 
+    def set_ImageDataGenerator(self, dataGenerator):
+        self.dataGenerator = dataGenerator
 
     def load_model(self, path):
         self.model.load_weights(path)
@@ -55,6 +68,12 @@ class Xception_Model():
         # self.train_loss, self.train_metrics = self.model.evaluate(x=x, y=y, batch_size=512, verbose=1)
         return self.history
 
+    def fit_generator(self, dataset_dir, target_size = (299, 299), batch_size = 128, nb_of_imgs=90000):
+        train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'training')
+        valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'validation')
+        self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.2, epochs = 70, callbacks=self.callBackList,
+                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size))
+
     def sumary(self):
         return self.model.summary()
 
@@ -69,21 +88,46 @@ def accuracy(test_x, test_y, model):
     accuracy = float(num_correct)/results.shape[0]
     return (accuracy * 100)
 
+class MySequence(Sequence):
+    def __init__(self, set_file, batch_size, file_size = (299, 299)):
+        self.file_size = file_size
+        self.batch_size = batch_size
+        self.x_set, self.y_set = 2*[None]
+        with open(set_file, 'r') as sf:
+            self.x_set, self.y_set = sf.readlines.split()
+    
+    def __len__(self):
+        return int(np.ceil(len(self.x_set)/float(self.batch_size)))
+
+    def __getitem__(self, idx):
+        batch_x = self.x_set[idx*self.batch_size : (idx+1)*self.batch_size]
+        batch_y = self.y_set[idx*self.batch_size : (idx+1)*self.batch_size]
+        return np.array([
+            resize(imread(file_name), self.file_size) for file_name in batch_x
+        ]), np.array(to_categorical(batch_y))
+
+class MyImageDataGenerator(ImageDataGenerator):
+    def __init__(self):
+        ImageDataGenerator.__init__(self, rescale=1./255, shear_range= 0.2, zoom_range= 0.2, horizontal_flip=True, validation_split=0.1)
 
 
 def run():
+    dataset_dir = sys.argv[1]
+    # dir_test = sys.argv[1]
 
-    dir_test = sys.argv[1]
-
-    X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
+    # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
     model = Xception_Model(input_shape=(299,299,3),  batch_size = 64,
                      num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
+    dataGenerator = MyImageDataGenerator()
+    model.set_ImageDataGenerator(dataGenerator)
+    model.fit_generator(dataset_dir, batch_size=128)
+
     # model.load_model("weights.05-0.50.hdf5")
-    model.fit(X,Y)
+    # model.fit(X,Y)
 
 
     # print("accuracy on testset: ", accuracy(X,Y,model))
