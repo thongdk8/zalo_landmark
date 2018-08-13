@@ -19,8 +19,8 @@ import os
 class Xception_Model():
     def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
         try:
-            os.mkdir("logs")
             os.mkdir("out_model")
+            os.mkdir("logs")
         except:
             print("Created output directory !")
         self.batch_size = batch_size
@@ -43,10 +43,10 @@ class Xception_Model():
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
         
-        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=True)
-        # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+        # adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=False)
+        sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
-        self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
