@@ -28,8 +28,7 @@ class Xception_Model():
         if trainable:
             self.model.load_weights(pretrained_model)
 
-        for layer in self.model.layers[:-20]:
-            layer.trainable = False
+        
 
         if ~trainable:
             for layer in self.model.layers:
@@ -43,15 +42,18 @@ class Xception_Model():
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
         
-        # adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=False)
-        sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+        for layer in self.model.layers[:-3]:
+            layer.trainable = False
+
+        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=False)
+        # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
-        self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
         self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}-{val_acc:.2f}.hdf5',
-                                                          monitor='val_acc', verbose=0, save_best_only=True,
+                                                          monitor='val_acc', verbose=1, save_best_only=True,
                                                           save_weights_only=False, mode='auto', period=1)
         self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
 
