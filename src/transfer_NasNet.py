@@ -73,11 +73,12 @@ class NasNet_Model():
         self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=10, verbose=1)
-        self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
+        # self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
         self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}-{val_acc:.2f}.hdf5',
                                                           monitor='val_acc', verbose=1, save_best_only=True,
                                                           save_weights_only=False, mode='auto', period=1)
-        self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
+        # self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
+        self.callBackList = [self.earlyStopping, self.checkpoint]
 
         [self.train_loss, self.train_metrics] = 2*[None]
         self.history = None
