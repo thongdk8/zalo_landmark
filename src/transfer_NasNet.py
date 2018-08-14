@@ -41,9 +41,9 @@ class NasNet_Model():
         self.batch_size = batch_size
         self.model = None
         if ~is_mobile:
-            self.model = DenseNet201(input_shape=input_shape, include_top=False,weights='imagenet',pooling='max')
+            self.model = NASNetLarge(input_shape=input_shape, include_top=False,weights='imagenet',pooling='max')
         else:
-            self.model = DenseNet121(input_shape=input_shape, include_top=False,weights='imagenet',pooling='max')
+            self.model = NASNetMobile(input_shape=input_shape, include_top=False,weights='imagenet',pooling='max')
 
         x = self.model.output
         # x = GlobalAveragePooling2D()(x)
