@@ -28,12 +28,6 @@ class Xception_Model():
         if trainable:
             self.model.load_weights(pretrained_model)
 
-        
-
-        if ~trainable:
-            for layer in self.model.layers:
-                layer.trainable = False
-
         x = self.model.output
         x = GlobalAveragePooling2D()(x)
         # add a fully-connected layer
@@ -42,10 +36,14 @@ class Xception_Model():
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
         
+        if ~trainable:
+            for layer in self.model.layers:
+                layer.trainable = False
+
         for layer in self.model.layers[:-3]:
             layer.trainable = False
 
-        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6, amsgrad=False)
+        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6)
         # sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
