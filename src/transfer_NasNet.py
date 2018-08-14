@@ -59,10 +59,12 @@ class NasNet_Model():
         if ~trainable:
             for layer in self.model.layers:
                 layer.trainable = False
-        else:
+        if trainable:
             for layer in self.model.layers[:-10]:
                 layer.trainable = False
-
+            for layer in self.model.layers[-20:]:
+                layer.trainable = True
+        
         if max_trainable:
             for layer in self.model.layers:
                 layer.trainable = True
