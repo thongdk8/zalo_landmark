@@ -48,7 +48,7 @@ class NasNet_Model():
         x = self.model.output
         # x = GlobalAveragePooling2D()(x)
         # add a fully-connected layer
-        # x = Dense(1024, activation='relu')(x)
+        x = Dense(512, activation='relu')(x)
         self.predictions = Dense(num_classes, activation='softmax', name='out_put')(x)
         # model = Model(inputs=base_model.input, outputs=base_model.get_layer('avg_pool').output)
         self.model = Model(inputs=self.model.input, outputs=self.predictions)
@@ -60,7 +60,7 @@ class NasNet_Model():
             for layer in self.model.layers:
                 layer.trainable = False
         else:
-            for layer in self.model.layers[:-2]:
+            for layer in self.model.layers[:-10]:
                 layer.trainable = False
 
         if max_trainable:
@@ -152,13 +152,13 @@ def run():
     # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
-    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 128,
+    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 64,
                      num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
     model.set_ImageDataGenerator(dataGenerator)
-    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=128 )
+    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=64 )
 
     # model.load_model("weights.05-0.50.hdf5")
     # model.fit(X,Y)
