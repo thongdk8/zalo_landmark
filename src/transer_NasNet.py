@@ -60,7 +60,7 @@ class NasNet_Model():
             for layer in self.model.layers:
                 layer.trainable = False
         else:
-            for layer in self.model.layers[:-1]:
+            for layer in self.model.layers[:-2]:
                 layer.trainable = False
 
         if max_trainable:
@@ -151,13 +151,13 @@ def run():
     # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
-    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 192,
+    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 128,
                      num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
     model.set_ImageDataGenerator(dataGenerator)
-    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=192 )
+    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=128 )
 
     # model.load_model("weights.05-0.50.hdf5")
     # model.fit(X,Y)
