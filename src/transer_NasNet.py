@@ -32,7 +32,7 @@ def preprocess_input(x):
 
 class NasNet_Model():
     def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, load_trained=False,
-                             is_mobile=False, pretrained_model = 'pretrained.h5'):
+                             is_mobile=False, max_trainable = False, pretrained_model = 'pretrained.h5'):
         try:
             os.mkdir("out_model")
             os.mkdir("logs")
@@ -63,8 +63,9 @@ class NasNet_Model():
             for layer in self.model.layers[:-1]:
                 layer.trainable = False
 
-        for layer in self.model.layers:
-            layer.trainable = True
+        if max_trainable:
+            for layer in self.model.layers:
+                layer.trainable = True
 
         # adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6)
         sgd = SGD(lr=5e-4, decay=1e-6, momentum=0.9, nesterov=True)
@@ -150,13 +151,13 @@ def run():
     # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
-    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 128,
+    model = NasNet_Model(input_shape=(331,331,3),  batch_size = 192,
                      num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
     model.set_ImageDataGenerator(dataGenerator)
-    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=128 )
+    model.fit_generator(dataset_dir, target_size=(331,331), batch_size=192 )
 
     # model.load_model("weights.05-0.50.hdf5")
     # model.fit(X,Y)
