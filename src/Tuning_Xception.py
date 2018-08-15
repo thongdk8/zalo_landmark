@@ -2,7 +2,7 @@ import keras
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Dense, Conv2D, GlobalAveragePooling2D
-from preprocessing import *
+from utilities import compute_class_weights
 from keras.optimizers import Adam,SGD
 
 from keras.preprocessing.image import ImageDataGenerator
@@ -81,7 +81,7 @@ class Xception_Model():
         train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'training')
         valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'validation')
         self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.2, epochs = 70, callbacks=self.callBackList,
-                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size))
+                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size), class_weight= compute_class_weights(dataset_dir))
 
     def sumary(self):
         return self.model.summary()
