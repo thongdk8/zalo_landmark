@@ -15,6 +15,7 @@ from skimage.io import imread
 from skimage.transform import resize
 import os
 
+from utilities import compute_class_weights
 
 def preprocess_input(x):
     """Preprocesses a numpy array encoding a batch of images.
@@ -62,7 +63,7 @@ class NasNet_Model():
         if trainable:
             for layer in self.model.layers[:-10]:
                 layer.trainable = False
-            for layer in self.model.layers[-20:]:
+            for layer in self.model.layers[-10:]:
                 layer.trainable = True
         
         if max_trainable:
@@ -107,7 +108,7 @@ class NasNet_Model():
         train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'training')
         valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'validation')
         self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.1, epochs = 70, callbacks=self.callBackList,
-                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size))
+                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size), class_weight=compute_class_weights(dataset_dir))
 
     def sumary(self):
         return self.model.summary()
