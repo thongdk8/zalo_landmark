@@ -54,7 +54,7 @@ def compute_class_weights(dataset_dir):
     classes = np.sort([int(c) for c in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, c))] )
     print(classes)
     for i, c in enumerate(classes):
-        n_imgs = len( os.listdir(os.path.join(dataset_dir,c)) )
+        n_imgs = len( os.listdir(os.path.join(dataset_dir,str(c))) )
         class_weights[i] = total/(len(classes) * n_imgs)
     
     return class_weights
