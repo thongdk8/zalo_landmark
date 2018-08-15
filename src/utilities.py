@@ -44,3 +44,17 @@ def get_top_k_(model, imgs, k=3):
     predicted_labels = np.argsort(results, axis=1)
     # print(predicted_labels)
     return np.squeeze(predicted_labels[:, -k:])
+
+def compute_class_weights(dataset_dir):
+    total = 0
+    for root, dirs, files in os.walk(dataset_dir):
+        total += len(files)
+
+    class_weights = {}
+    classes = np.sort([c for c in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, c))] )
+    print(classes)
+    for i, c in enumerate(classes):
+        n_imgs = len( os.listdir(os.path.join(dataset_dir,c)) )
+        class_weights[i] = total/(len(classes) * n_imgs)
+    
+    return class_weights
