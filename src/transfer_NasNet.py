@@ -30,6 +30,9 @@ def parse_args(argv):
         parser.add_argument('--trainable', type=lambda x: (str(x).lower() == 'true'), default=True, help="is training")
         parser.add_argument('--load_trained', type=lambda x: (str(x).lower() == 'true'), default=False, help="is load trained model for tuning")
         parser.add_argument('--image_size', type=int, default=224, help="size of input image feed to model")
+        parser.add_argument('--optimizer', type=str, default='adam', help='optimizer use for training')
+        parser.add_argument('--init_epoch', type=int, default=0, help='init epoch if run from previous running')
+        parser.add_argument('--max_epoch', type=int, default=100, help='max of epoch')
         return parser.parse_args(argv)
 
 def preprocess_input(x):
@@ -48,7 +51,8 @@ def preprocess_input(x):
 
 class NasNet_Model():
     def __init__(self, image_size=299,  batch_size = 64, num_classes = 100, trainable=True, load_trained=False,
-                             is_mobile=False, max_trainable = False, pretrained_model = 'pretrained.h5', init_lr = 0.001, n_chanels=3):
+                             is_mobile=False, max_trainable = False, pretrained_model = 'pretrained.h5',
+                              init_lr = 0.001, n_chanels=3, optimizer='adam', init_epoch=0, max_epoch=100):
         try:
             os.mkdir("out_model")
             os.mkdir("logs")
@@ -56,6 +60,8 @@ class NasNet_Model():
             print("Created output directory !")
         self.batch_size = batch_size
         self.init_lr = init_lr
+        self.max_epoch = max_epoch
+        self.init_epoch = init_epoch
         self.model = None
         
         input_shape = (image_size, image_size, n_chanels)
@@ -76,33 +82,36 @@ class NasNet_Model():
             self.model.load_weights(pretrained_model)
             print("Load pretrained model successfully!")
 
-        if ~trainable:
+        if trainable == False:
             for layer in self.model.layers:
                 layer.trainable = False
+            print("Use model for inference is activated!")
         if trainable:
             for layer in self.model.layers[:-5]:
                 layer.trainable = False
             for layer in self.model.layers[-5:]:
                 layer.trainable = True
-            print("Train only last layers!")
+            print("Train last layers is activated!")
         
         if max_trainable:
             for layer in self.model.layers:
                 layer.trainable = True
             print("Train whole network is activated!")
-
-        adam = Adam(lr=init_lr, beta_1=0.9, beta_2=0.999, decay=1e-6)
+        if (optimizer=='adam'):
+            opt = Adam(lr=init_lr, beta_1=0.9, beta_2=0.999, decay=1e-6)
+        else:
+            opt = sgd = SGD(lr=init_lr, decay=1e-6, momentum=0.9, nesterov=True)
         # sgd = SGD(lr=init_lr, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
-        self.model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=10, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
         self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}-{acc:.2f}-{val_acc:.2f}.hdf5',
                                                           monitor='val_acc', verbose=1, save_best_only=True,
                                                           save_weights_only=False, mode='auto', period=1)
-        # self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
-        self.callBackList = [self.earlyStopping, self.checkpoint]
+        self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
+        #self.callBackList = [self.earlyStopping, self.checkpoint]
 
         [self.train_loss, self.train_metrics] = 2*[None]
         self.history = None
@@ -131,8 +140,10 @@ class NasNet_Model():
         valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'validation')
         print("Class mapping: ")
         print(train_generator.class_indices)
-        self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.1, epochs = 70, callbacks=self.callBackList,
-                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size), class_weight=compute_class_weights(dataset_dir))
+        self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.1, epochs = self.max_epoch, 
+                                  callbacks=self.callBackList,
+                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size), initial_epoch = self.init_epoch,
+                                 class_weight=compute_class_weights(dataset_dir))
 
     def sumary(self):
         return self.model.summary()
@@ -168,9 +179,9 @@ class MySequence(Sequence):
 
 class MyImageDataGenerator(ImageDataGenerator):
     def __init__(self):
-        ImageDataGenerator.__init__(self, height_shift_range=0.2, width_shift_range=0.2, shear_range= 0.2, zoom_range= 0.2,
-                                         horizontal_flip=True, validation_split=0.1
-                                         , preprocessing_function=keras.applications.densenet.preprocess_input)
+        ImageDataGenerator.__init__(self, height_shift_range=0.3, width_shift_range=0.3, shear_range= 0.2, zoom_range= 0.2, 
+                                    horizontal_flip=True, validation_split=0.1, rotation_range = 45, 
+                                    preprocessing_function=keras.applications.densenet.preprocess_input)
 
 
 def run(args):
@@ -182,7 +193,8 @@ def run(args):
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
     model = NasNet_Model(image_size=args.image_size,  batch_size = args.batch_size,
                      num_classes = 103, trainable=args.trainable, pretrained_model = args.model,
-                     init_lr=args.init_lr, max_trainable=args.max_trainable, load_trained=args.load_trained)
+                     init_lr=args.init_lr, max_trainable=args.max_trainable, load_trained=args.load_trained, 
+                     init_epoch=args.init_epoch, optimizer=args.optimizer)
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
