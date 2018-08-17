@@ -45,7 +45,7 @@ class Xception_Model():
             layer.trainable = True
 
         # adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=1e-6)
-        sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+        sgd = SGD(lr=5e-4, decay=1e-6, momentum=0.9, nesterov=True)
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -117,7 +117,8 @@ class MySequence(Sequence):
 
 class MyImageDataGenerator(ImageDataGenerator):
     def __init__(self):
-        ImageDataGenerator.__init__(self, rescale=1./255, shear_range= 0.2, zoom_range= 0.2, horizontal_flip=True, validation_split=0.1)
+        ImageDataGenerator.__init__(self, rescale=1./255, height_shift_range=0.2, width_shift_range=0.2, shear_range= 0.2, zoom_range= 0.2,
+                                    horizontal_flip=True, rotation_range = 30, validation_split=0.1)
 
 
 def run():
