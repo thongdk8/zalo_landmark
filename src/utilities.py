@@ -2,6 +2,7 @@ import numpy as np
 import os
 from skimage.io import imread
 from skimage.transform import resize
+from skimage.color import gray2rgb
 import cv2
 import imageio
 
@@ -18,7 +19,10 @@ def list_imgs(path):
 def process_image(img_path, img_size = (299,299)):
     img = None
     try:
-        img = resize(cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB), img_size)
+        # img = resize(imread(img_path), img_size)
+        # if np.shape(img) == img_size:
+        #     img = gray2rgb(img)
+        img = resize( cv2.cvtColor( cv2.imread(img_path) ,cv2.COLOR_BGR2RGB), img_size )
     except:
         print("read gif file ", img_path)
         imgs = imageio.mimread(img_path)
@@ -27,7 +31,7 @@ def process_image(img_path, img_size = (299,299)):
             # print(np.asarray(imgs[0]).shape)
             img = cv2.resize(cv2.cvtColor(imgs[0], cv2.COLOR_RGBA2RGB), img_size)
         else:
-            img = resize(cv2.cvtColor(imgs[0], cv2.COLOR_GRAY2RGB), img_size)
+            img = resize( cv2.cvtColor( imgs[0] ,cv2.COLOR_GRAY2RGB), img_size )
     img = np.asarray(img, dtype=np.float32)
     # img = img*(1./255)
     return img

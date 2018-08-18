@@ -33,7 +33,7 @@ def parse_args(argv):
         return parser.parse_args(argv)
 
 def run(args):
-    myModel = load_model(args.model)
+    myModel = load_model(args.model, compile=False)
     for layer in myModel.layers:
         layer.trainable = False
     myModel.summary()
@@ -55,7 +55,7 @@ def run(args):
                 break;
             # print("image: ", f_ids[step*args.batch_size + idx])
             try:
-                t_img = util.process_image(img_files[step*args.batch_size + idx])
+                t_img = util.process_image(img_files[step*args.batch_size + idx], img_size=(args.image_size, args.image_size))
                 # if (np.asarray(t_img).shape == (299,299,3)):
                 t_imgs.append(t_img)
                 t_ids.append(f_ids[step*args.batch_size + idx])
