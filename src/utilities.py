@@ -58,3 +58,17 @@ def compute_class_weights(dataset_dir):
         class_weights[i] = total/(len(classes) * n_imgs)
     
     return class_weights
+
+def count_image_samples(dataset_dir):
+    total = 0
+    for root, dirs, files in os.walk(dataset_dir):
+        total += len(files)
+    return total+100
+
+def accuracy(test_x, test_y, model):
+    results = model.predict(test_x)
+    predicted_labels = np.argmax(results, axis=1)
+    true_labels = np.argmax(test_y, axis=1)
+    num_correct = np.sum(predicted_labels == true_labels)
+    accuracy = float(num_correct)/results.shape[0]
+    return (accuracy * 100)
