@@ -17,13 +17,16 @@ import os
 # metrics.categorical_accuracy()
 
 class Xception_Model():
-    def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
+    def __init__(self, input_shape=(299,299,3),  batch_size = 64, num_classes = 100, trainable=True, 
+                        initial_epoch = 0,
+                        pretrained_model = 'xception_weights_tf_dim_ordering_tf_kernels_notop.h5'):
         try:
             os.mkdir("out_model")
             os.mkdir("logs")
         except:
             print("Created output directory !")
         self.batch_size = batch_size
+        self.initial_epoch = initial_epoch
         self.model = keras.applications.Xception(include_top=False,weights=None,input_shape=input_shape)
 
         x = self.model.output
@@ -81,7 +84,9 @@ class Xception_Model():
         train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 101, subset = 'training')
         valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 101, subset = 'validation')
         self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size), epochs = 70, callbacks=self.callBackList,
-                                 validation_data = valid_generator, validation_steps=0.03 * int(nb_of_imgs/batch_size), class_weight= compute_class_weights(dataset_dir))
+                                 validation_data = valid_generator, validation_steps=0.03 * int(nb_of_imgs/batch_size), 
+                                 initial_epoch = self.initial_epoch,
+                                 class_weight= compute_class_weights(dataset_dir))
 
     def sumary(self):
         return self.model.summary()
@@ -128,8 +133,9 @@ def run():
     # X, Y = load_image(dir_test,num_classes=102, W=299, H=299)
 
     # model = Xception_Model(input_shape=(299,299,3), 64, 103, trainable=True, pretrained_model = sys.argv[2])
+    initial_epoch = sys.argv[3]
     model = Xception_Model(input_shape=(299,299,3),  batch_size = 16,
-                     num_classes = 103, trainable=True, pretrained_model = sys.argv[2])
+                     num_classes = 103, trainable=True, pretrained_model = sys.argv[2], initial_epoch=initial_epoch)
     model.sumary()
 
     dataGenerator = MyImageDataGenerator()
