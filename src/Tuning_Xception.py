@@ -49,9 +49,9 @@ class Xception_Model():
         # self.model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
-        self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=10, verbose=1)
+        self.earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0.001, patience=15, verbose=1)
         self.tensorBoard = keras.callbacks.TensorBoard('./logs',batch_size=batch_size, write_grads=True,write_images=True)
-        self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}.acc-{acc:.2f}-val_acc-{val_acc:.2f}.hdf5',
+        self.checkpoint = keras.callbacks.ModelCheckpoint('./out_model/weights.{epoch:02d}.acc-{acc:.2f}-val_acc-{val_acc:.3f}.hdf5',
                                                           monitor='val_acc', verbose=1, save_best_only=True,
                                                           save_weights_only=False, mode='auto', period=1)
         self.callBackList = [self.earlyStopping, self.tensorBoard, self.checkpoint]
@@ -77,11 +77,11 @@ class Xception_Model():
         # self.train_loss, self.train_metrics = self.model.evaluate(x=x, y=y, batch_size=512, verbose=1)
         return self.history
 
-    def fit_generator(self, dataset_dir, target_size = (299, 299), batch_size = 128, nb_of_imgs=90000):
-        train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 100, subset = 'training')
-        valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 100, subset = 'validation')
-        self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.1, epochs = 70, callbacks=self.callBackList,
-                                 validation_data = valid_generator, validation_steps=0.1 * int(nb_of_imgs/batch_size), class_weight= compute_class_weights(dataset_dir))
+    def fit_generator(self, dataset_dir, target_size = (299, 299), batch_size = 128, nb_of_imgs=88320):
+        train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 101, subset = 'training')
+        valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 101, subset = 'validation')
+        self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size), epochs = 70, callbacks=self.callBackList,
+                                 validation_data = valid_generator, validation_steps=0.03 * int(nb_of_imgs/batch_size), class_weight= compute_class_weights(dataset_dir))
 
     def sumary(self):
         return self.model.summary()
@@ -117,8 +117,8 @@ class MySequence(Sequence):
 
 class MyImageDataGenerator(ImageDataGenerator):
     def __init__(self):
-        ImageDataGenerator.__init__(self, rescale=1./255, height_shift_range=0.2, width_shift_range=0.2, shear_range= 0.2, zoom_range= 0.2,
-                                    horizontal_flip=True, rotation_range = 30, validation_split=0.1)
+        ImageDataGenerator.__init__(self, rescale=1./255, height_shift_range=0.25, width_shift_range=0.25, shear_range= 0.2, zoom_range= 0.2,
+                                    horizontal_flip=True, rotation_range = 30, validation_split=0.03)
 
 
 def run():
