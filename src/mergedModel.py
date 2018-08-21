@@ -180,8 +180,8 @@ class MyModel():
         nb_of_imgs = count_image_samples(dataset_dir)
         print("Start training with learning rate=", self.init_lr, 'batch size=', batch_size, 'on {} image samples.'.format(nb_of_imgs))
 
-        train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'training')
-        valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 110, subset = 'validation')
+        train_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 120, subset = 'training')
+        valid_generator = self.dataGenerator.flow_from_directory(dataset_dir, target_size=target_size, batch_size = batch_size ,seed = 120, subset = 'validation')
         print("Class mapping: ")
         print(train_generator.class_indices)
         self.model.fit_generator(train_generator, steps_per_epoch = int(nb_of_imgs/batch_size)*1.1, epochs = self.max_epoch, 
@@ -218,7 +218,7 @@ def run(args):
                      init_epoch=args.init_epoch, optimizer=args.optimizer, max_epoch=args.max_epoch, net_type=args.net_type)
     model.sumary()
 
-    dataGenerator = MyImageDataGenerator(model.get_pre_process_func())
+    dataGenerator = MyImageDataGenerator(keras.applications.inception_resnet_v2.preprocess_input)
     model.set_ImageDataGenerator(dataGenerator)
     model.fit_generator_from_directory(dataset_dir)
     print("trainning is done!")
