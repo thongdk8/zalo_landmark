@@ -114,9 +114,9 @@ class MyModel():
         M2 = Model(inputs=input_img, outputs=re_m2)
 
         x = layers.concatenate( [M1.output, M2.output] )
-        x = layers.BatchNormalization()
+        x = layers.BatchNormalization() (x)
         x2 = layers.Dense(2048, activation='relu') (x)
-        x2 = layers.BatchNormalization()
+        x2 = layers.BatchNormalization() (x2)
         predictions = layers.Dense(nb_classes,activation='softmax') (x2)
 
         # K.reset_uids()
@@ -131,7 +131,7 @@ class MyModel():
                 layer.trainable = False
             print("Use model for inference is activated!")
         if trainable and not max_trainable:
-            for layer in self.model.layers[:-3]:
+            for layer in self.model.layers[:-4]:
                 try:
                     layer.trainable = False
                 except:
@@ -142,7 +142,7 @@ class MyModel():
                     except:
                         print ("cannot freeze layer")
                         pass
-            for layer in self.model.layers[-3:]:
+            for layer in self.model.layers[-4:]:
                 layer.trainable = True
             print("Train last layers is activated!")
         if max_trainable:
