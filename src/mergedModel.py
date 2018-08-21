@@ -134,6 +134,7 @@ class MyModel():
                     layer.trainable = False
                 except:
                     try:
+                        print("Freezing submodel")
                         for l in layer.layers:
                             l.trainable = False
                     except:
