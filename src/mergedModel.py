@@ -35,7 +35,7 @@ path_pretrained_model_2 = '/home/pbthong/works/zalo_challenge/weights.31.acc-0.9
 K.set_floatx('float32')
 
 
-type_models = {0:'DenseNet121', 1:'DenseNet169', 2:'DenseNet201', 3:'ResNet50', 4:'InceptionV3', 5:'InceptionResNetV2', 6:'NASNetLarge', 7: 'NASNetMobile'}
+type_models = {0:'Custom', 1:'DenseNet169', 2:'DenseNet201', 3:'ResNet50', 4:'InceptionV3', 5:'InceptionResNetV2', 6:'NASNetLarge', 7: 'NASNetMobile', 8:'Xception'}
 
 def parse_args(argv):
         parser = argparse.ArgumentParser()
@@ -114,7 +114,9 @@ class MyModel():
         M2 = Model(inputs=input_img, outputs=re_m2)
 
         x = layers.concatenate( [M1.output, M2.output] )
+        x = layers.BatchNormalization()
         x2 = layers.Dense(2048, activation='relu') (x)
+        x2 = layers.BatchNormalization()
         predictions = layers.Dense(nb_classes,activation='softmax') (x2)
 
         # K.reset_uids()
