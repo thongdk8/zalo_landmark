@@ -32,7 +32,7 @@ path_pretrained_model_1 = '/home/nghia_VN/thongpb/zalo_challenge/models/weights.
 path_pretrained_model_2 = '/home/nghia_VN/thongpb/zalo_challenge/zalo_landmark/src/out_model/weights.31.acc-0.98-val_acc-0.93.hdf5'
 
 
-
+K.set_floatx('float32')
 
 
 type_models = {0:'DenseNet121', 1:'DenseNet169', 2:'DenseNet201', 3:'ResNet50', 4:'InceptionV3', 5:'InceptionResNetV2', 6:'NASNetLarge', 7: 'NASNetMobile'}
@@ -98,6 +98,7 @@ class MyModel():
         M1 = Model(inputs=M1.input, outputs=dense_1)
         # M1.layers.pop()
         # M1.build(input_shape)
+        K.reset_uids()
         re_m1 = M1(input_img)
 
 
@@ -106,6 +107,7 @@ class MyModel():
         M2 = Model(inputs=M2.input, outputs=dense_2)
         # M2.layers.pop()
         # M2.build(input_shape)
+        K.reset_uids()
         re_m2 = M2(input_img)
 
         M1 = Model(inputs=input_img, outputs=re_m1)
@@ -115,6 +117,7 @@ class MyModel():
         x2 = layers.Dense(2048, activation='relu') (x)
         predictions = layers.Dense(nb_classes,activation='softmax') (x2)
 
+        K.reset_uids()
         self.model = Model(inputs=input_img, outputs=predictions)
         
         if load_trained:
